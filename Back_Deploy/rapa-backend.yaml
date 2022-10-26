@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rapa-backend-deploy
+  labels:
+    app: rapa-appserver
+  namespace: rapa-app-ns
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: rapa-appserver
+
+  template:
+    metadata:
+      name: rapa-backend-pod
+      labels:
+        app: rapa-appserver
+    spec:
+      containers:
+        - name: rapa-backend
+          image: kimnamju/spring:1.0 
+          imagePullPolicy: Always 
+          ports:
+            - containerPort: 8080
+        
+---
+# ... Service YAML definition
+apiVersion: v1
+kind: Service
+metadata:
+  name: rapa-backend-service
+  labels:
+    app: rapa-appserver
+  namespace: rapa-app-ns
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: rapa-appserver

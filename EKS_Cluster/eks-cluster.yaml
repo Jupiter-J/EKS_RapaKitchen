@@ -1,0 +1,81 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: web-host-on-eks
+  region: ap-northeast-2 # 우리가 사용할 리전 지정 
+  version: "1.23"
+privateCluster: # Allows configuring a fully-private cluster in which no node has outbound internet access, and private access to AWS services is enabled via VPC endpoints
+  enabled: true
+  additionalEndpointServices: # specifies additional endpoint services that must be enabled for private access. Valid entries are: "cloudformation", "autoscaling", "logs".
+  - cloudformation
+  - logs
+  - autoscaling
+vpc:
+  id: "vpc-09edb3feee055c718" # Specify the VPC_ID to the eksctl command
+  subnets: # Creating the EKS master nodes to a completely private environment
+    private:
+      private-ap-northeast-2a: 
+        id: "subnet-0b28ef8f3166f2d6e"
+      private-ap-northeast-2b:
+        id: "subnet-03f4dcfccdbd316c4"
+      private-ap-northeast-2c:
+        id: "subnet-08c15a1460b0b2c34"
+      private-ap-northeast-2d:
+        id: "subnet-06ae0132f6c69eb9f"
+managedNodeGroups: # Create a managed node group in private subnets
+- name: managed
+  labels:
+    role: worker
+  instanceType: t3.small
+  minSize: 4
+  desiredCapacity: 4
+  maxSize: 10
+  privateNetworking: true
+  volumeSize: 50
+  volumeType: gp2
+  volumeEncrypted: true
+  iam:
+    withAddonPolicies: 
+      autoScaler: true # enables IAM policy for cluster-autoscaler
+      albIngress: true 
+      cloudWatch: true 
+  # securityGroups:
+  #    attachIDs: ["sg-1", "sg-2"]
+  ssh:
+      allow: true
+      #publicKeyPath: ~/.ssh/id_rsa.pub
+      publicKeyName: kakao03-keypair
+      # new feature for restricting SSH access to certain AWS security group IDs
+  subnets:
+    - private-ap-northeast-2a
+    - private-ap-northeast-2b
+    - private-ap-northeast-2c
+    - private-ap-northeast-2d
+cloudWatch:
+  clusterLogging:
+    # enable specific types of cluster control plane logs
+    enableTypes: ["all"]
+    # all supported types: "api", "audit", "authenticator", "controllerManager", "scheduler"
+    # supported special values: "*" and "all"
+addons: # explore more on doc about EKS addons: https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html
+- name: vpc-cni # no version is specified so it deploys the default version
+  attachPolicyARNs:
+    - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+- name: coredns
+  version: latest # auto discovers the latest available
+- name: kube-proxy
+  version: latest
+iam:
+  withOIDC: true # Enable OIDC identity provider for plugins, explore more on doc: https://docs.aws.amazon.com/eks/latest/userguide/authenticate-oidc-identity-provider.html
+  serviceAccounts: # create k8s service accounts(https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/) and associate with IAM policy, see more on: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+  - metadata:
+      name: aws-load-balancer-controller # create the needed service account for aws-load-balancer-controller while provisioning ALB/ELB by k8s ingress api
+      namespace: kube-system
+    wellKnownPolicies:
+      awsLoadBalancerController: true
+  - metadata:
+      name: cluster-autoscaler # create the CA needed service account and its IAM policy
+      namespace: kube-system
+      labels: {aws-usage: "cluster-ops"}
+    wellKnownPolicies:
+      autoScaler: true
