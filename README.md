@@ -34,3 +34,7 @@
 ##  Service Structure Diagram
 <img width="642" alt="image" src="https://user-images.githubusercontent.com/73453283/197961395-6b88d4de-26f3-4cf5-81c6-dca9e70dc799.png">
 
+## RapaKitchen
+![image](https://user-images.githubusercontent.com/73453283/197978101-98d82ab7-6bad-44c2-89a3-20ff44e80879.png)
+
+
