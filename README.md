@@ -1,4 +1,5 @@
 # EKS_RapaKitchen
+Web Application Hosts on EKS Workshop
 ---
 ###  구현 환경
 - kubernetes : v 1.23.9
@@ -36,5 +37,11 @@
 
 ## RapaKitchen
 ![image](https://user-images.githubusercontent.com/73453283/197978101-98d82ab7-6bad-44c2-89a3-20ff44e80879.png)
+
+
+### Team3
+|노희재|강아람|김남주|이대현|신재민|
+|------|---|---|---|---|
+|EKS Cluster|Autoscaling|Application Deployment|EKS Cluster|EKS Mornitoring|
 
 
