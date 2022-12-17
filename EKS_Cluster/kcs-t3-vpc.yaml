@@ -1,0 +1,416 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  # 클러스터 deafult 이름
+  ClusterName:
+    Type: String
+    Default: eks-kcs
+  
+  # 타겟 리전
+  TargetRegion:
+    Type: String
+    Default: ap-northeast-2
+  
+  # 타겟 AZ
+  TargetAZ1:
+    Type: String
+    Default: ap-northeast-2a
+  
+  TargetAZ2:
+    Type: String
+    Default: ap-northeast-2b
+  
+  TargetAZ3:
+    Type: String
+    Default: ap-northeast-2c
+  
+  TargetAZ4:
+    Type: String
+    Default: ap-northeast-2d
+  
+  # VPC CIDR
+  VpcCidrBlock:
+    Type: String
+    Default: 192.168.0.0/16
+  
+  # Private Subnet CIDR
+  WorkerSubnetPrivateBlock1:
+    Type: String
+    Default: 192.168.0.0/20
+  
+  WorkerSubnetPrivateBlock2:
+    Type: String
+    Default: 192.168.16.0/20
+  
+  WorkerSubnetPrivateBlock3:
+    Type: String
+    Default: 192.168.32.0/20
+  
+  WorkerSubnetPrivateBlock4:
+    Type: String
+    Default: 192.168.48.0/20
+  
+  # Public Subnet CIDR
+  WorkerSubnetPublicBlock1:
+    Type: String
+    Default: 192.168.252.0/24
+  
+  WorkerSubnetPublicBlock2:
+    Type: String
+    Default: 192.168.253.0/24
+  
+  WorkerSubnetPublicBlock3:
+    Type: String
+    Default: 192.168.254.0/24
+  
+  WorkerSubnetPublicBlock4:
+    Type: String
+    Default: 192.168.255.0/24
+  
+  # Database Private Subnet CIDR
+  DatabaseSubnetPrivateBlock1:
+    Type: String
+    Default: 192.168.250.0/24
+  
+  DatabaseSubnetPrivateBlock2:
+    Type: String
+    Default: 192.168.251.0/24
+  
+  KeyPair:
+    Type: String
+    Default: kakao03-keypair
+  
+  BastionHostInstanceType:
+    Type: String
+    Default: t2.micro
+  
+  BastionHostImage:
+    Type: String
+    Default: ami-06bc6b8f687e4b1f4
+
+Resources:
+  # VPC
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCidrBlock
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-VPC
+  
+  # Private Subnet 설정
+  WorkerSubnetPrivate1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ1
+      CidrBlock: !Ref WorkerSubnetPrivateBlock1
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPrivate1
+  
+  WorkerSubnetPrivate2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ2
+      CidrBlock: !Ref WorkerSubnetPrivateBlock2
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPrivate2
+  
+  WorkerSubnetPrivate3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ3
+      CidrBlock: !Ref WorkerSubnetPrivateBlock3
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPrivate3
+  
+  WorkerSubnetPrivate4:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ4
+      CidrBlock: !Ref WorkerSubnetPrivateBlock4
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPrivate4
+  
+  # public Subnet 설정
+  WorkerSubnetPublic1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ1
+      CidrBlock: !Ref WorkerSubnetPublicBlock1
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPublic1
+  
+  WorkerSubnetPublic2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ2
+      CidrBlock: !Ref WorkerSubnetPublicBlock2
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPublic2
+  
+  WorkerSubnetPublic3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ3
+      CidrBlock: !Ref WorkerSubnetPublicBlock3
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPublic3
+  
+  WorkerSubnetPublic4:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ4
+      CidrBlock: !Ref WorkerSubnetPublicBlock4
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPublic4
+  
+  DatabaseSubnetPrivate1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ1
+      CidrBlock: !Ref DatabaseSubnetPrivateBlock1
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-DatabaseSubnetPrivate1
+  
+  DatabaseSubnetPrivate2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      AvailabilityZone: !Ref TargetAZ2
+      CidrBlock: !Ref DatabaseSubnetPrivateBlock2
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-DatabaseSubnetPrivate2
+  
+  # IGW 설정
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  
+  VPCInternetGatewayAttachement:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+  
+  # NGW-EIP 발급
+  NGWEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-NatGateway-EIP
+  
+  # 배스쳔호스트 EIP 발급
+  BastionHost1EIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-BastionHost-EIP
+  
+  NatGateway1:
+    Type: AWS::EC2::NatGateway
+    DependsOn: VPCInternetGatewayAttachement
+    Properties:
+      AllocationId: !GetAtt NGWEIP.AllocationId
+      SubnetId: !Ref WorkerSubnetPublic1
+  
+  # Public Subnet 라우팅 테이블 선언
+  WorkerSubnetPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPublicRouteTable
+  
+  # Private Subnet 라우팅 테이블 선언
+  WorkerSubnetPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-WorkerSubnetPrivateRouteTable
+  
+  # Public Subnet에 라우팅 규칙 추가
+  WorkerSubnetPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VPCInternetGatewayAttachement
+    Properties:
+      RouteTableId: !Ref WorkerSubnetPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  
+  # Private Subnet에 라우팅 규칙 추가
+  WorkerSubnetPrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref WorkerSubnetPrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1
+  
+  # Public Subnet과 Public 라우팅 테이블을 연결
+  WorkerSubnetPublic1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPublic1
+      RouteTableId: !Ref WorkerSubnetPublicRouteTable
+  
+  WorkerSubnetPublic2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPublic2
+      RouteTableId: !Ref WorkerSubnetPublicRouteTable
+  
+  WorkerSubnetPublic3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPublic3
+      RouteTableId: !Ref WorkerSubnetPublicRouteTable
+  
+  WorkerSubnetPublic4RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPublic4
+      RouteTableId: !Ref WorkerSubnetPublicRouteTable
+  
+  # Private Subnet과 Private 라우팅 테이블을 연결
+  WorkerSubnetPrivate1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPrivate1
+      RouteTableId: !Ref WorkerSubnetPrivateRouteTable
+  
+  WorkerSubnetPrivate2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPrivate2
+      RouteTableId: !Ref WorkerSubnetPrivateRouteTable
+  
+  WorkerSubnetPrivate3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPrivate3
+      RouteTableId: !Ref WorkerSubnetPrivateRouteTable
+  
+  WorkerSubnetPrivate4RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref WorkerSubnetPrivate4
+      RouteTableId: !Ref WorkerSubnetPrivateRouteTable
+  
+  # 배스쳔호스트
+  BastionHost1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref BastionHostInstanceType
+      KeyName: !Ref KeyPair
+      ImageId: !Ref BastionHostImage
+      SubnetId: !Ref WorkerSubnetPublic1
+      SecurityGroupIds:
+        - !Ref BastionHostSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-bastion-host1
+  
+  BastionHost1EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref BastionHost1
+      EIP: !Ref BastionHost1EIP
+  
+  # 배스쳔호스트 Security Group
+  BastionHostSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      GroupDescription: Allow SSH to Bastion Host
+  
+#  데이터베이스 Subnet 대역 NAT Routing 정책
+#  DatabaseSubnetPrivate1RouteTableAssociation:
+#    Type: AWS::EC2::SubnetRouteTableAssociation
+#    Properties:
+#      SubnetId: !Ref DatabaseSubnetPrivate1
+#      RouteTableId: !Ref WorkerSubnetPrivateRouteTable
+#  
+#  DatabaseSubnetPrivate2RouteTableAssociation:
+#    Type: AWS::EC2::SubnetRouteTableAssociation
+#    Properties:
+#      SubnetId: !Ref DatabaseSubnetPrivate2
+#      RouteTableId: !Ref WorkerSubnetPrivateRouteTable
+
+
+# 출력
+Outputs:
+  Region:
+    Value: !Ref TargetRegion
+  
+  Vpc:
+    Value: !Ref VPC
+  
+  WorkerSubnetPublic1:
+    Value: !Ref WorkerSubnetPublic1
+  
+  WorkerSubnetPublic2:
+    Value: !Ref WorkerSubnetPublic2
+  
+  WorkerSubnetPublic3:
+    Value: !Ref WorkerSubnetPublic3
+  
+  WorkerSubnetPublic4:
+    Value: !Ref WorkerSubnetPublic4
+  
+  WorkerSubnetPrivate1:
+    Value: !Ref WorkerSubnetPrivate1
+  
+  WorkerSubnetPrivate2:
+    Value: !Ref WorkerSubnetPrivate2
+  
+  WorkerSubnetPrivate3:
+    Value: !Ref WorkerSubnetPrivate3
+  
+  WorkerSubnetPrivate4:
+    Value: !Ref WorkerSubnetPrivate4
+  
+  BastionHost1EIP:
+    Value: !Ref BastionHost1EIP
